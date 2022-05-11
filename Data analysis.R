@@ -203,40 +203,40 @@ join_temperature_first_bloom <- Site_temperature %>%
 
 rolling_count_240 <- rollify(sum, window = 240)
 
-count_Num_of_Freezing_Days <- join_temperature_first_bloom %>% 
+Count_Freezing_Bloom_Day <- join_temperature_first_bloom %>% 
   group_by(Site) %>% 
   mutate(below_freezing = Temperature < 0,
          Num_of_Freezing_Days = rolling_count_240(below_freezing))
 
-count_Num_of_Freezing_Days <- count_Num_of_Freezing_Days %>% 
-  filter(!is.na(Year))
+# Count_Freezing_Bloom_Day <- Count_Freezing_Bloom_Day %>% 
+#   filter(!is.na(Year))
 
-View(count_Num_of_Freezing_Days)
+View(Count_Freezing_Bloom_Day)
 
-count_Num_of_Freezing_Days %>% 
+Count_Freezing_Bloom_Day %>% 
   ggplot(aes(x = Year, y = Num_of_Freezing_Days)) +
   geom_point() +
   geom_smooth() +
   facet_wrap('Notes')
 
-count_Num_of_Freezing_Days %>% 
+Count_Freezing_Bloom_Day %>% 
   filter(Notes %in% c('SC', 'KIC', 'SC_TC')) %>% 
   ggplot(aes(x = Year, y = Num_of_Freezing_Days)) +
   geom_point() +
   geom_smooth() +
   facet_wrap('Notes')
 
-coeff <- 10
+coeff <- 1
 
 # A few constants
-temperatureColor <- "red"
-priceColor <- "black"
+Days_of_Year_Color <- "red"
+Num_of_Freezing_Days_Color <- "black"
 
-ggplot(count_Num_of_Freezing_Days, aes(x=Year)) +
+ggplot(Count_Freezing_Bloom_Day, aes(x=Year)) +
   
-  geom_smooth( aes(y=Days_of_Year), size=2, color=temperatureColor) + 
-  geom_smooth( aes(y=(Num_of_Freezing_Days / coeff)), size=2, color=priceColor) +
-  
+  geom_smooth( aes(y=Days_of_Year), size=1, color=Days_of_Year_Color) + 
+  geom_smooth( aes(y=(Num_of_Freezing_Days / coeff)), 
+               size=1, color=Num_of_Freezing_Days_Color) +
   scale_y_continuous(
     
     # Features of the first axis
@@ -245,8 +245,13 @@ ggplot(count_Num_of_Freezing_Days, aes(x=Year)) +
     # Add a second axis and specify its features
     sec.axis = sec_axis(~.*coeff, name="Number of Freezing Days")
   ) + 
-  
+  facet_wrap('Notes') +
   theme_ipsum()
 
-coeff <- 10
+TC_counts <- Count_Freezing_Bloom_Day %>% 
+  filter(Notes == 'TC')
 
+View(TC_counts)
+
+# There seems to be a correlation between earlier bloom dates with decreasing
+# number of freezing days.  
